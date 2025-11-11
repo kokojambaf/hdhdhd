@@ -1,0 +1,79 @@
+
+using System;
+using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
+
+public class CinemaDatabase
+{
+    private readonly string _connectionString = "your_connection_string";  // Строка подключения к базе данных
+
+    // Метод для добавления данных о пользователях
+    public void AddUser(string login, string password, int roleId)
+    {
+        string passwordHash = HashPassword(password);  // Хэшируем пароль
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+
+            string insertUser = @"
+                INSERT INTO CinemaUser (Login, PasswordHash, RoleID) 
+                VALUES (@Login, @PasswordHash, @RoleID)";
+            
+            using (var command = new SqlCommand(insertUser, connection))
+            {
+                command.Parameters.AddWithValue("@Login", login);
+                command.Parameters.AddWithValue("@PasswordHash", passwordHash);
+                command.Parameters.AddWithValue("@RoleID", roleId);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+
+    // Метод для хэширования пароля
+    private string HashPassword(string password)
+    {
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+        }
+    }
+
+    // Метод для добавления привилегий для роли (если нужно)
+    public void AddRolePrivilege(int roleId, int privilegeId)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            connection.Open();
+
+            string insertRolePrivilege = @"
+                INSERT INTO CinemaRolePrivilege (RoleID, PrivilegeID)
+                VALUES (@RoleID, @PrivilegeID)";
+            
+            using (var command = new SqlCommand(insertRolePrivilege, connection))
+            {
+                command.Parameters.AddWithValue("@RoleID", roleId);
+                command.Parameters.AddWithValue("@PrivilegeID", privilegeId);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+
+    // Пример добавления нескольких пользователей
+    public static void Main(string[] args)
+    {
+        var db = new CinemaDatabase();
+
+        // Пример добавления пользователей с хэшированными паролями
+        db.AddUser("admin", "admin_password", 1);   // Роль 1 — Администратор
+        db.AddUser("ticket_clerk", "ticket_password", 2);   // Роль 2 — Билетер
+        db.AddUser("visitor", "visitor_password", 3);   // Роль 3 — Посетитель
+
+        // Пример добавления привилегий для роли
+        db.AddRolePrivilege(1, 1);   // Администратор имеет привилегию с ID 1
+        db.AddRolePrivilege(2, 2);   // Билетер имеет привилегию с ID 2
+        db.AddRolePrivilege(3, 3);   // Посетитель имеет привилегию с ID 3
+    }
+}
