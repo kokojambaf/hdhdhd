@@ -1,0 +1,43 @@
+namespace AuthLibrary
+{
+    public class UserSession
+    {
+        private static UserSession _instance;
+        private static readonly object Lock = new object();
+
+        public CinemaUser CurrentUser { get; private set; }
+
+        private UserSession() { }
+
+        public static UserSession Instance
+        {
+            get
+            {
+                lock (Lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new UserSession();
+                    }
+                    return _instance;
+                }
+            }
+        }
+
+        public void SetCurrentUser(CinemaUser user)
+        {
+            CurrentUser = user;
+        }
+
+        public void Clear()
+        {
+            CurrentUser = null;
+        }
+    }
+
+    public class CinemaUser
+    {
+        public string Login { get; set; }
+        public int RoleID { get; set; }
+    }
+}
