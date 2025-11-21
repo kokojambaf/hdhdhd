@@ -1,0 +1,26 @@
+CREATE FUNCTION dbo.fn_GetMoviesByCinemaName (@CinemaName NVARCHAR(100))
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        f.FilmId, 
+        f.Title, 
+        s.StartDate AS SessionTime, 
+        h.HallNumber 
+    FROM 
+        Film f
+    JOIN 
+        FilmGenre fg ON f.FilmId = fg.FilmId
+    JOIN 
+        Genre g ON fg.GenreId = g.GenreId
+    JOIN 
+        Session s ON f.FilmId = s.FilmId
+    JOIN 
+        Hall h ON s.HallId = h.HallId
+    JOIN 
+        Cinema c ON h.Cinema = c.CinemaId
+    WHERE 
+        c.Name = @CinemaName 
+        AND CAST(s.StartDate AS DATE) = CAST(GETDATE() AS DATE)  -- Только на сегодня
+);
