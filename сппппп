@@ -1,0 +1,19 @@
+CREATE FUNCTION dbo.GetFilmsByGenreName(@GenreName NVARCHAR(100))
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT f.FilmId, f.Title, STRING_AGG(g.Name, ', ') AS Genres
+    FROM Film f
+    JOIN FilmGenre fg ON f.FilmId = fg.FilmId
+    JOIN Genre g ON fg.GenreId = g.GenreId
+    WHERE g.Name IN 
+    (
+        SELECT g2.Name
+        FROM FilmGenre fg2
+        JOIN Genre g2 ON fg2.GenreId = g2.GenreId
+        JOIN Film f2 ON fg2.FilmId = f2.FilmId
+        WHERE f2.Title = @GenreName
+    )
+    GROUP BY f.FilmId, f.Title
+);
