@@ -1,0 +1,23 @@
+CREATE PROCEDURE dbo.sp_AddOrUpdateHall
+    @CinemaName NVARCHAR(100) = 'Титан-Арена',  -- По умолчанию 'Титан-Арена'
+    @HallNumber INT,                            -- Номер зала
+    @RowsCount INT,                             -- Количество рядов
+    @SeatsCount INT                             -- Количество мест в ряду
+AS
+BEGIN
+    -- Проверяем, существует ли уже такой зал в кинотеатре
+    IF EXISTS (SELECT 1 FROM Hall WHERE Cinema = @CinemaName AND HallNumber = @HallNumber)
+    BEGIN
+        -- Если зал существует, обновляем количество рядов и мест в ряду
+        UPDATE Hall
+        SET RowsCount = @RowsCount,
+            SeatsCount = @SeatsCount
+        WHERE Cinema = @CinemaName AND HallNumber = @HallNumber;
+    END
+    ELSE
+    BEGIN
+        -- Если зал не существует, добавляем новый
+        INSERT INTO Hall (Cinema, HallNumber, RowsCount, SeatsCount)
+        VALUES (@CinemaName, @HallNumber, @RowsCount, @SeatsCount);
+    END
+END;
