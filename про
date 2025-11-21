@@ -1,0 +1,32 @@
+CREATE PROCEDURE dbo.sp_AddTicket
+    @PhoneNumber NVARCHAR(15),    -- Номер телефона покупателя
+    @SessionId INT,               -- Код сеанса
+    @Row INT,                     -- Номер ряда
+    @Seat INT,                    -- Номер места
+    @TicketId INT OUTPUT          -- Выходной параметр для номера билета
+AS
+BEGIN
+    DECLARE @VisitorId INT;
+
+    -- Проверяем, существует ли посетитель с таким номером телефона
+    SELECT @VisitorId = VisitorId
+    FROM Visitor
+    WHERE Phone = @PhoneNumber;
+
+    -- Если посетитель не найден, добавляем нового
+    IF @VisitorId IS NULL
+    BEGIN
+        INSERT INTO Visitor (Phone)
+        VALUES (@PhoneNumber);
+
+        -- Получаем ID нового посетителя
+        SET @VisitorId = SCOPE_IDENTITY();
+    END
+
+    -- Добавляем новый билет
+    INSERT INTO Ticket (VisitorId, SessionId, Row, Seat)
+    VALUES (@VisitorId, @SessionId, @Row, @Seat);
+
+    -- Возвращаем номер билета
+    SET @TicketId = SCOPE_IDENTITY();
+END;
