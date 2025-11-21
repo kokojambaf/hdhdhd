@@ -1,0 +1,2 @@
+EXEC dbo.sp_AddOrUpdateHall @CinemaName = 'Титан-Арена', @HallNumber = 5, @RowsCount = 10, @SeatsCount = 20;
+EXEC dbo.sp_AddOrUpdateHall @CinemaName = 'Титан-Арена', @HallNumber = 5, @RowsCount = 12, @SeatsCount = 25;
